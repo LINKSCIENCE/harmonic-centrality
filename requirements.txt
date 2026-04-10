@@ -1,0 +1,15 @@
+streamlit
+networkx
+matplotlib
+seaborn
+plotly
+requests
+beautifulsoup4
+lxml
+pandas
+numpy
+fpdf2
+pyvis
+urllib3
+streamlit-agraph
+kaleido
