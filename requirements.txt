@@ -1,8 +1,9 @@
+kaleido==0.2.1
 streamlit
 networkx
 matplotlib
 seaborn
-plotly
+plotly==5.24.1
 requests
 beautifulsoup4
 lxml
@@ -12,4 +13,3 @@ fpdf2
 pyvis
 urllib3
 streamlit-agraph
-kaleido
