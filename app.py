@@ -32,9 +32,17 @@ import time
 import io
 import tempfile
 import os
+import base64
+from pathlib import Path
 from fpdf import FPDF
 import warnings
 warnings.filterwarnings("ignore")
+
+# ── Load WLDM logo as base64 (for inline HTML embed) ──────────────────
+_LOGO_PATH = Path(__file__).parent / "assets" / "wldm-logo.png"
+WLDM_LOGO_B64 = ""
+if _LOGO_PATH.exists():
+    WLDM_LOGO_B64 = base64.b64encode(_LOGO_PATH.read_bytes()).decode("ascii")
 
 # ─────────────────────────────── CONFIG ────────────────────────────────
 
@@ -118,21 +126,22 @@ section[data-testid="stSidebar"] {
     padding: 48px 24px 40px 24px;
     margin: 0 0 32px 0;
 }
-.hero-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 16px; background: var(--wldm-blue);
-    border: 1px solid var(--wldm-black); border-radius: 100px;
+.logo-wrap {
+    display: flex; justify-content: center;
+    margin: 0 0 28px 0;
+}
+.logo-wrap.small { justify-content: flex-start; margin: 0 0 14px 0; }
+.wldm-logo {
+    height: 56px; width: auto;
+    max-width: 280px;
+}
+.logo-wrap.small .wldm-logo { height: 36px; }
+.wldm-logo-fallback {
     font-family: 'Chakra Petch', sans-serif;
-    font-size: 12px; font-weight: 600; color: var(--wldm-black);
-    margin-bottom: 26px; letter-spacing: 0.6px;
-    text-transform: uppercase;
+    font-weight: 800; font-size: 32px;
+    letter-spacing: 0.05em;
+    color: var(--wldm-black);
 }
-.hero-badge .dot {
-    width: 6px; height: 6px; background: var(--wldm-black);
-    border-radius: 50%;
-    animation: wldm-pulse 2s infinite;
-}
-@keyframes wldm-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
 .hero-title {
     font-family: 'Chakra Petch', sans-serif;
@@ -338,8 +347,9 @@ section[data-testid="stSidebar"] {
     border-radius: 8px 8px 0 0;
 }
 
-/* Hide Streamlit chrome */
-#MainMenu, footer, header[data-testid="stHeader"] { visibility: hidden; }
+/* Hide Streamlit chrome BUT keep header (so sidebar toggle works) */
+#MainMenu, footer { visibility: hidden; }
+header[data-testid="stHeader"] { background: transparent !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1514,12 +1524,14 @@ def main():
 
     # ── HERO (only on landing) ────────────────────────────────────────
     on_landing = not st.session_state.crawl_done and not start_crawl
+    logo_html = (
+        f'<img src="data:image/png;base64,{WLDM_LOGO_B64}" alt="WLDM" class="wldm-logo" />'
+        if WLDM_LOGO_B64 else '<div class="wldm-logo-fallback">WLDM</div>'
+    )
     if on_landing:
-        st.markdown("""
+        st.markdown(f"""
         <div class="hero-wrap">
-          <div class="hero-badge">
-            <span class="dot"></span> WLDM.IO
-          </div>
+          <div class="logo-wrap">{logo_html}</div>
           <h1 class="hero-title">
             Is your site&apos;s <span class="highlight">link architecture</span><br>
             working against you?
@@ -1537,9 +1549,10 @@ def main():
         </div>
         """, unsafe_allow_html=True)
     else:
-        st.markdown("""
+        st.markdown(f"""
         <div class="sub-header">
-          <div class="kicker">WLDM.IO · HARMONIC CENTRALITY</div>
+          <div class="logo-wrap small">{logo_html}</div>
+          <div class="kicker">HARMONIC CENTRALITY</div>
           <h2>Internal Link Architecture</h2>
         </div>
         """, unsafe_allow_html=True)
