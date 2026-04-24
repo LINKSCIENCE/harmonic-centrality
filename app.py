@@ -38,19 +38,31 @@ warnings.filterwarnings("ignore")
 
 # ─────────────────────────────── CONFIG ────────────────────────────────
 
-PALETTE = ['#20808D','#A84B2F','#1B474D','#BCE2E7','#944454',
-           '#FFC553','#848456','#6E522B']
-TEAL       = '#20808D'
-DARK_TEAL  = '#1B474D'
-BG         = '#F7F6F2'
-TEXT_COLOR = '#28251D'
-MUTED      = '#7A7974'
+# ── WLDM Brand palette ────────────────────────────────────────────────
+# Primary blue: #b8d3d8 · Deep blue: #6b9ba4 · Fluro accent: #e1ff01
+PALETTE = ['#6b9ba4','#b8d3d8','#3d5a63','#e0ecee','#a84b2f',
+           '#ffc553','#848456','#6e522b']
+TEAL       = '#6b9ba4'   # WLDM primary blue (kept var name for compat)
+DARK_TEAL  = '#3d5a63'   # WLDM deep blue
+BG         = '#f7f5ee'   # WLDM beige-50
+TEXT_COLOR = '#2a2b29'   # WLDM black
+MUTED      = '#8a9196'   # WLDM muted blue-gray
+
+# Brand constants
+WLDM_BLUE        = '#b8d3d8'   # primary brand blue (light)
+WLDM_BLUE_DARK   = '#6b9ba4'   # darker variant
+WLDM_BLUE_PALE   = '#e0ecee'
+WLDM_BLACK       = '#2a2b29'
+WLDM_BEIGE       = '#eeeade'
+WLDM_BEIGE_50    = '#f7f5ee'
+WLDM_FLURO       = '#e1ff01'
+WLDM_TAUPE       = '#bfc0b6'
 
 CATEGORY_COLORS = [
-    '#20808D','#A84B2F','#FFC553','#944454','#1B474D',
-    '#6E522B','#848456','#BCE2E7','#D95F5F','#5F9EA0',
-    '#8B6914','#3D7A5E','#C47B3A','#5A5F8C','#8E3A59',
-    '#4A7C59','#7B4F9E','#C4823A','#3A6B8C','#9E6B4F',
+    '#6b9ba4','#b8d3d8','#3d5a63','#a84b2f','#ffc553',
+    '#944454','#6e522b','#848456','#5f9ea0','#d95f5f',
+    '#8b6914','#3d7a5e','#c47b3a','#5a5f8c','#8e3a59',
+    '#4a7c59','#7b4f9e','#c4823a','#3a6b8c','#9e6b4f',
 ]
 
 st.set_page_config(
@@ -64,33 +76,270 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+  --wldm-black: #2a2b29;
+  --wldm-blue: #b8d3d8;
+  --wldm-blue-dark: #6b9ba4;
+  --wldm-blue-pale: #e0ecee;
+  --wldm-beige: #eeeade;
+  --wldm-beige-50: #f7f5ee;
+  --wldm-taupe: #bfc0b6;
+  --wldm-fluro: #e1ff01;
+  --wldm-fluro-glow: rgba(225,255,1,0.35);
+  --wldm-ink-60: rgba(42,43,41,0.72);
+  --wldm-ink-40: rgba(42,43,41,0.55);
+}
+
+/* ── GLOBAL: beige + signature dotted grid ────────────────────────── */
+html, body, [class*="css"], .stMarkdown, p, li, span {
+    font-family: 'Roboto', system-ui, sans-serif;
+    color: var(--wldm-black);
+}
+h1, h2, h3, h4, h5, h6 { font-family: 'Chakra Petch', sans-serif; letter-spacing: -0.02em; }
+
+.stApp {
+    background: var(--wldm-beige-50);
+    background-image:
+        radial-gradient(rgba(42,43,41,0.18) 1px, transparent 1px),
+        radial-gradient(rgba(42,43,41,0.10) 1px, transparent 1px);
+    background-size: 28px 28px, 28px 28px;
+    background-position: 0 0, 14px 14px;
+}
+section[data-testid="stSidebar"] {
+    background: var(--wldm-beige);
+    border-right: 1px solid rgba(42,43,41,0.08);
+}
+
+/* ── HERO (WLDM landing-page style + fluro highlighter) ─────────── */
+.hero-wrap {
+    text-align: center;
+    padding: 48px 24px 40px 24px;
+    margin: 0 0 32px 0;
+}
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; background: var(--wldm-blue);
+    border: 1px solid var(--wldm-black); border-radius: 100px;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 12px; font-weight: 600; color: var(--wldm-black);
+    margin-bottom: 26px; letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+.hero-badge .dot {
+    width: 6px; height: 6px; background: var(--wldm-black);
+    border-radius: 50%;
+    animation: wldm-pulse 2s infinite;
+}
+@keyframes wldm-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.hero-title {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: clamp(36px, 5vw, 58px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -1.3px;
+    color: var(--wldm-black);
+    margin: 0 0 20px 0;
+}
+.hero-title .highlight {
+    background: var(--wldm-fluro);
+    color: var(--wldm-black);
+    padding: 0 12px;
+    border-radius: 8px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    box-shadow: 0 4px 20px var(--wldm-fluro-glow);
+}
+.hero-subtitle {
+    font-size: 18px;
+    color: var(--wldm-ink-60);
+    max-width: 640px;
+    margin: 0 auto 28px auto;
+    line-height: 1.6;
+}
+.hero-badges-row {
+    display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 12px; font-weight: 600;
+    color: var(--wldm-black);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 28px;
+}
+.hero-badges-row .chip {
+    padding: 5px 14px;
+    background: #fff;
+    border: 1px solid var(--wldm-black);
+    border-radius: 100px;
+}
+
+/* ── Sub-header on results view ─────────────────────────────────── */
+.sub-header {
+    padding: 8px 0 14px 0; margin-bottom: 18px;
+    border-bottom: 1px solid rgba(42,43,41,0.12);
+}
+.sub-header .kicker {
+    font-family: 'Chakra Petch', sans-serif;
+    color: var(--wldm-black); opacity: 0.55;
+    font-size: 11px; letter-spacing: 0.35em; font-weight: 600;
+    text-transform: uppercase;
+}
+.sub-header h2 {
+    color: var(--wldm-black); font-weight: 700;
+    margin: 4px 0 0 0; font-size: 1.7rem;
+}
+
+/* ── FEATURE CARDS (neo-brutal: hard shadow on hover) ───────────── */
 .metric-card {
-    background: white; border-radius: 12px; padding: 20px;
-    border: 1px solid #E8E6E0; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    text-align: center; height: 100%;
+    background: #fff;
+    border-radius: 16px;
+    padding: 26px 24px;
+    border: 1px solid var(--wldm-black);
+    text-align: left;
+    height: 100%;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    box-shadow: 4px 4px 0 var(--wldm-black);
 }
-.metric-value { font-size: 2rem; font-weight: 700; color: #20808D; line-height: 1.2; }
-.metric-label { font-size: 0.85rem; color: #7A7974; font-weight: 500; margin-top: 4px;
-                text-transform: uppercase; letter-spacing: 0.05em; }
-.metric-sublabel { font-size: 0.75rem; color: #BAB9B4; margin-top: 2px; }
-.section-header { font-size: 1.3rem; font-weight: 700; color: #28251D; padding: 16px 0 8px 0;
-                  border-bottom: 2px solid #20808D; margin-bottom: 20px; }
-.insight-box { background: linear-gradient(135deg, #F0F8F9 0%, #E8F4F5 100%);
-               border-left: 4px solid #20808D; border-radius: 8px;
-               padding: 16px 20px; margin: 12px 0; }
-.insight-box h4 { color: #1B474D; margin-bottom: 8px; font-size: 1rem; }
-.insight-box p  { color: #28251D; margin: 0; font-size: 0.9rem; line-height: 1.6; }
-.warn-box { background: #FFF8ED; border-left: 4px solid #FFC553; border-radius: 8px;
-            padding: 14px 18px; margin: 10px 0; }
-.warn-box p { color: #28251D; margin: 0; font-size: 0.88rem; }
-.stButton > button[kind="primary"] {
-    background: linear-gradient(135deg, #20808D, #1B474D);
-    color: white; border: none; border-radius: 8px;
-    font-weight: 600; padding: 0.6rem 1.2rem;
+.metric-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--wldm-black);
 }
-.stButton > button[kind="primary"]:hover { opacity: 0.9; }
+.metric-card .icon {
+    display: inline-block;
+    background: var(--wldm-blue);
+    padding: 6px 10px; border-radius: 8px;
+    font-size: 1.4rem; margin-bottom: 12px;
+    border: 1px solid var(--wldm-black);
+}
+.metric-card h4 {
+    font-family: 'Chakra Petch', sans-serif;
+    color: var(--wldm-black); font-weight: 700;
+    margin: 0 0 8px 0; font-size: 1.15rem;
+}
+.metric-card p { color: var(--wldm-ink-60); font-size: 0.92rem; margin: 0; line-height: 1.55; }
+
+/* ── KPI cards (results page) ───────────────────────────────────── */
+.metric-value {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 2rem; font-weight: 700;
+    color: var(--wldm-black); line-height: 1.2;
+}
+.metric-label {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.78rem; color: var(--wldm-ink-40); font-weight: 600; margin-top: 4px;
+    text-transform: uppercase; letter-spacing: 0.12em;
+}
+.metric-sublabel { font-size: 0.75rem; color: var(--wldm-taupe); margin-top: 2px; }
+
+.section-header {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 1.35rem; font-weight: 700; color: var(--wldm-black);
+    padding: 18px 0 10px 0;
+    border-bottom: 2px solid var(--wldm-black);
+    margin-bottom: 20px;
+}
+
+/* ── INSIGHT box (blue) / WARN box (fluro) ──────────────────────── */
+.insight-box {
+    background: var(--wldm-blue);
+    border: 1px solid var(--wldm-black);
+    border-radius: 14px;
+    padding: 20px 24px; margin: 16px 0;
+    box-shadow: 4px 4px 0 var(--wldm-black);
+}
+.insight-box h4 {
+    font-family: 'Chakra Petch', sans-serif;
+    color: var(--wldm-black); margin: 0 0 10px 0;
+    font-size: 1.05rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+}
+.insight-box p { color: var(--wldm-black); margin: 0; font-size: 0.95rem; line-height: 1.65; }
+.insight-box code {
+    background: var(--wldm-beige-50);
+    padding: 2px 8px; border-radius: 4px;
+    border: 1px solid var(--wldm-black);
+    color: var(--wldm-black); font-family: monospace;
+}
+
+.warn-box {
+    background: var(--wldm-fluro);
+    border: 1px solid var(--wldm-black);
+    border-radius: 14px;
+    padding: 14px 20px; margin: 10px 0;
+    box-shadow: 0 4px 20px var(--wldm-fluro-glow);
+}
+.warn-box p { color: var(--wldm-black); margin: 0; font-size: 0.9rem; font-weight: 500; }
+
+/* ── BUTTONS — override Streamlit red ───────────────────────────── */
+.stButton > button {
+    font-family: 'Chakra Petch', sans-serif !important;
+    border-radius: 100px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    border: 1.5px solid var(--wldm-black) !important;
+    transition: all 0.2s ease !important;
+    padding: 0.55rem 1.4rem !important;
+}
+.stButton > button[kind="primary"],
+.stButton > button[data-testid="baseButton-primary"] {
+    background: var(--wldm-fluro) !important;
+    color: var(--wldm-black) !important;
+}
+.stButton > button[kind="primary"]:hover,
+.stButton > button[data-testid="baseButton-primary"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--wldm-fluro-glow);
+    background: var(--wldm-fluro) !important;
+}
+.stButton > button[kind="secondary"],
+.stButton > button:not([kind="primary"]):not([data-testid="baseButton-primary"]) {
+    background: transparent !important;
+    color: var(--wldm-black) !important;
+}
+.stButton > button:hover:not([kind="primary"]):not([data-testid="baseButton-primary"]) {
+    background: var(--wldm-black) !important;
+    color: var(--wldm-beige-50) !important;
+}
+
+/* ── SLIDERS — override Streamlit red ───────────────────────────── */
+.stSlider [role="slider"] {
+    background-color: var(--wldm-black) !important;
+    border: 2px solid var(--wldm-blue) !important;
+}
+.stSlider [data-baseweb="slider"] > div > div:nth-child(1) > div,
+.stSlider [data-baseweb="slider"] div[role="slider"] ~ div {
+    background: var(--wldm-blue) !important;
+}
+.stSlider [data-baseweb="slider"] div[class*="ThumbValue"] { color: var(--wldm-black) !important; }
+
+/* ── INPUT fields ───────────────────────────────────────────────── */
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea {
+    border: 1.5px solid var(--wldm-black) !important;
+    background: #fff !important;
+    border-radius: 10px !important;
+    color: var(--wldm-black) !important;
+    font-family: 'Roboto', sans-serif !important;
+}
+.stTextInput > div > div > input:focus { border-color: var(--wldm-blue-dark) !important; }
+
+/* ── TABS ───────────────────────────────────────────────────────── */
+.stTabs [data-baseweb="tab-list"] { gap: 6px; }
+.stTabs [data-baseweb="tab"] {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    color: var(--wldm-black);
+    background: transparent;
+}
+.stTabs [aria-selected="true"] {
+    background: var(--wldm-blue) !important;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Hide Streamlit chrome */
+#MainMenu, footer, header[data-testid="stHeader"] { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1263,18 +1512,40 @@ def main():
             "link equity, and AI citation probability."
         )
 
-    # ── HERO ──────────────────────────────────────────────────────────
-    st.markdown("""
-    <div style="text-align:center;padding:20px 0 10px 0">
-      <h1 style="color:#28251D;font-weight:700;margin-bottom:0">🔗 Harmonic Centrality Analyzer</h1>
-      <p style="color:#7A7974;font-size:1.1rem;margin-top:4px">
-          Advanced Internal Link Architecture Analysis for SEO</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # ── HERO (only on landing) ────────────────────────────────────────
+    on_landing = not st.session_state.crawl_done and not start_crawl
+    if on_landing:
+        st.markdown("""
+        <div class="hero-wrap">
+          <div class="hero-badge">
+            <span class="dot"></span> LINKSCIENCE &nbsp;·&nbsp; BY WLDM
+          </div>
+          <h1 class="hero-title">
+            Is your site&apos;s <span class="highlight">link architecture</span><br>
+            working against you?
+          </h1>
+          <p class="hero-subtitle">
+            Enter your domain. We&apos;ll crawl your internal link graph and show you
+            exactly which pages capture authority — and which are silently
+            starving your SEO.
+          </p>
+          <div class="hero-badges-row">
+            <span class="chip">Harmonic Centrality</span>
+            <span class="chip">Real-time Crawl</span>
+            <span class="chip">PDF Export</span>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class="sub-header">
+          <div class="kicker">LINKSCIENCE · HARMONIC CENTRALITY</div>
+          <h2>Internal Link Architecture</h2>
+        </div>
+        """, unsafe_allow_html=True)
 
     # ── LANDING SCREEN ─────────────────────────────────────────────────
-    if not st.session_state.crawl_done and not start_crawl:
-        st.markdown("---")
+    if on_landing:
         c1, c2, c3 = st.columns(3)
         cards = [
             ("📈", "Graph Metrics",
@@ -1288,15 +1559,15 @@ def main():
             with col:
                 st.markdown(f"""
                 <div class="metric-card">
-                  <div style="font-size:2rem;margin-bottom:8px">{icon}</div>
-                  <h4 style="color:#28251D">{title_c}</h4>
-                  <p style="color:#7A7974;font-size:0.9rem">{desc}</p>
+                  <div class="icon">{icon}</div>
+                  <h4>{title_c}</h4>
+                  <p>{desc}</p>
                 </div>""", unsafe_allow_html=True)
         st.markdown("""
-        <div class="insight-box" style="margin-top:24px">
+        <div class="insight-box" style="margin-top:32px">
           <h4>How It Works</h4>
           <p>
-            <b>1.</b> Enter your website URL and click Analyze.<br>
+            <b>1.</b> Enter your website URL in the sidebar and click Analyze.<br>
             <b>2.</b> The crawler discovers internal links via BFS traversal.<br>
             <b>3.</b> A directed graph is built and harmonic centrality is computed:
                       <code>H(v) = &Sigma; 1/d(v,u)</code><br>

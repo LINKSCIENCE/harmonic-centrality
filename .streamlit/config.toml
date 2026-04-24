@@ -1,0 +1,11 @@
+[theme]
+# WLDM brand theme
+primaryColor = "#e1ff01"
+backgroundColor = "#f7f5ee"
+secondaryBackgroundColor = "#eeeade"
+textColor = "#2a2b29"
+font = "sans serif"
+
+[server]
+enableXsrfProtection = false
+enableCORS = false
