@@ -1518,7 +1518,7 @@ def main():
         st.markdown("""
         <div class="hero-wrap">
           <div class="hero-badge">
-            <span class="dot"></span> LINKSCIENCE &nbsp;·&nbsp; BY WLDM
+            <span class="dot"></span> WLDM.IO
           </div>
           <h1 class="hero-title">
             Is your site&apos;s <span class="highlight">link architecture</span><br>
@@ -1539,7 +1539,7 @@ def main():
     else:
         st.markdown("""
         <div class="sub-header">
-          <div class="kicker">LINKSCIENCE · HARMONIC CENTRALITY</div>
+          <div class="kicker">WLDM.IO · HARMONIC CENTRALITY</div>
           <h2>Internal Link Architecture</h2>
         </div>
         """, unsafe_allow_html=True)
