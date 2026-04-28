@@ -33,6 +33,7 @@ import io
 import tempfile
 import os
 import base64
+from urllib.parse import quote_plus
 from pathlib import Path
 from fpdf import FPDF
 import warnings
@@ -43,6 +44,74 @@ _LOGO_PATH = Path(__file__).parent / "assets" / "wldm-logo.png"
 WLDM_LOGO_B64 = ""
 if _LOGO_PATH.exists():
     WLDM_LOGO_B64 = base64.b64encode(_LOGO_PATH.read_bytes()).decode("ascii")
+
+# ── Scraper proxy fallback config ─────────────────────────────────────
+SCRAPER_API_KEY = os.environ.get("SCRAPER_API_KEY", "").strip()
+
+# Realistic browser User-Agent (replaces naive "HarmonicCentralityBot")
+BROWSER_UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+              "AppleWebKit/537.36 (KHTML, like Gecko) "
+              "Chrome/121.0.0.0 Safari/537.36")
+DEFAULT_HEADERS = {
+    "User-Agent": BROWSER_UA,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+}
+_BLOCKED_STATUS = {401, 403, 429, 503}
+
+def _proxy_get(url, timeout=60, render=False):
+    """Fetch via ScraperAPI proxy (residential IPs + Cloudflare bypass)."""
+    if not SCRAPER_API_KEY:
+        return None
+    params = f"api_key={SCRAPER_API_KEY}&url={quote_plus(url)}"
+    if render:
+        params += "&render=true"
+    return requests.get(f"http://api.scraperapi.com?{params}", timeout=timeout)
+
+def smart_fetch(url, timeout=10):
+    """
+    Try direct fetch with realistic browser headers.
+    On block (403/429/503) or connection failure → fallback to ScraperAPI.
+    Returns the response or None.
+    """
+    direct_err = None
+    try:
+        resp = requests.get(url, headers=DEFAULT_HEADERS,
+                            timeout=timeout, allow_redirects=True)
+        if resp.status_code == 200:
+            return resp
+        if resp.status_code not in _BLOCKED_STATUS:
+            return resp  # 404/500 etc. — let caller decide
+    except requests.RequestException as e:
+        direct_err = e
+    # Direct failed or blocked → try proxy
+    if SCRAPER_API_KEY:
+        try:
+            return _proxy_get(url, timeout=max(timeout * 4, 60))
+        except requests.RequestException:
+            return None
+    if direct_err:
+        return None
+    return resp  # original blocked response
+
+def smart_head(url, timeout=10):
+    """Validation HEAD with proxy fallback."""
+    try:
+        resp = requests.head(url, headers=DEFAULT_HEADERS,
+                             timeout=timeout, allow_redirects=True)
+        if resp.status_code == 200 or resp.status_code not in _BLOCKED_STATUS:
+            return resp
+    except requests.RequestException:
+        pass
+    if SCRAPER_API_KEY:
+        try:
+            return _proxy_get(url, timeout=30)
+        except requests.RequestException:
+            return None
+    return None
 
 # ─────────────────────────────── CONFIG ────────────────────────────────
 
@@ -400,14 +469,15 @@ def crawl_website(start_url, max_pages=100, delay=0.3,
     edges   = []
     queue   = deque([start_url])
     page_info = {}
-    headers = {'User-Agent': 'Mozilla/5.0 (compatible; HarmonicCentralityBot/1.0)'}
 
     while queue and len(visited) < max_pages:
         url = queue.popleft()
         if url in visited:
             continue
         try:
-            resp = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
+            resp = smart_fetch(url, timeout=10)
+            if resp is None or resp.status_code != 200:
+                continue
             if 'text/html' not in resp.headers.get('Content-Type', ''):
                 continue
             visited.add(url)
@@ -1612,26 +1682,26 @@ def main():
             return
 
         # FIX 4: early reachability pre-check
-        _headers = {'User-Agent': 'Mozilla/5.0 (compatible; HarmonicCentralityBot/1.0)'}
         with st.spinner("Checking site reachability before crawl…"):
             try:
-                test_resp = requests.head(raw_url, headers=_headers,
-                                          timeout=10, allow_redirects=True)
+                test_resp = smart_head(raw_url, timeout=10)
+                if test_resp is None:
+                    st.error(
+                        "❌ Cannot reach site. Verify the URL is correct and the server is online. "
+                        "If the site uses anti-bot protection, our proxy fallback may be over budget — try again shortly."
+                    )
+                    return
                 if test_resp.status_code >= 400:
                     st.error(
                         f"❌ Site responded with HTTP {test_resp.status_code}. "
-                        "Please verify the URL is correct and publicly accessible."
+                        "This site appears to actively block automated access (Cloudflare or similar). "
+                        "For sites you own, allow our crawler in robots.txt. For others, try a different domain."
                     )
                     return
             except requests.exceptions.SSLError:
                 st.error(
                     "❌ SSL certificate error. Try using `http://` instead of `https://`, "
                     "or check that the site's certificate is valid."
-                )
-                return
-            except requests.exceptions.ConnectionError:
-                st.error(
-                    "❌ Cannot connect to site. Please verify the URL and your internet connection."
                 )
                 return
             except requests.exceptions.Timeout:
